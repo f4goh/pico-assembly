@@ -174,7 +174,7 @@ include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 
 Sauvegarder le fichier.
 
-## 2. Structure minimale du projet H
+## 2. Structure minimale du projet
 
 Le projet doit contenir :
 
