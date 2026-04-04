@@ -17,8 +17,8 @@ target_link_libraries(hello_asm
 )
 
 # Activer sortie UART (important pour printf)
-#pico_enable_stdio_uart(hello_asm 1)
-#pico_enable_stdio_usb(hello_asm 0)
+pico_enable_stdio_uart(hello_asm 1)
+pico_enable_stdio_usb(hello_asm 0)
 
 # Générer le .uf2
 pico_add_extra_outputs(hello_asm)

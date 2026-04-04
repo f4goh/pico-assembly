@@ -249,10 +249,186 @@ sudo udevadm trigger
 ## 4. Tester OpenOCD
 
 ```bash
-sudo openocd -f interface/cmsis-dap.cfg -f target/rp2040.cfg -c "adapter speed 5000"
+openocd -f interface/cmsis-dap.cfg -f target/rp2040.cfg -c "gdb_memory_map disable" -c "init"
+```
+---
+
+# GDB Cheat Sheet pour RP2040 (ARM Cortex-M0+)
+
+
+executer gdb avec le fichier uf2 compilé
+```gdb
+gdb-multiarch hello_asm.elf
+```
+
+
+## 🔹 Connexion au RP2040 via OpenOCD
+```gdb
+target extended-remote localhost:3333   # se connecter au serveur GDB
+monitor reset halt                      # reset et halt CPU
 ```
 
 ---
+
+## 🔹 Gestion des breakpoints
+
+### 1. Breakpoint sur un label
+```gdb
+break loop         # s'arrête à l'adresse du label 'loop' lors de la prochaine itération
+break main         # s'arrête sur 'main'
+```
+
+### 2. Breakpoint sur une adresse exacte
+```gdb
+break *0x10000322  # s'arrête à l'adresse spécifique
+break *$pc         # s'arrête à l'instruction courante
+```
+
+### 3. Watchpoint sur un registre ou variable
+```gdb
+watch $r7          # s'arrête quand R7 change
+```
+
+---
+
+## 🔹 Exécution / Contrôle
+
+```gdb
+continue           # continue l'exécution jusqu'au prochain breakpoint
+step               # exécute l'instruction suivante (step over source-level)
+next               # exécute l'instruction suivante sans rentrer dans les fonctions
+stepi (si)         # exécute 1 instruction assembleur (step instruction)
+```
+
+---
+
+## 🔹 Inspection des instructions et registres
+
+### Instructions
+```gdb
+x/i $pc            # affiche l'instruction courante sans exécuter
+x/5i $pc           # affiche 5 instructions à partir du PC
+x/i 0x10000322     # affiche l'instruction à une adresse spécifique
+```
+
+### Registres
+```gdb
+info registers     # affiche tous les registres
+print $r0          # affiche le registre R0
+```
+
+---
+
+## 🔹 Inspection de la mémoire
+
+```gdb
+x/s $r0            # affiche la chaîne pointée par R0
+x/10x 0x20041f40   # affiche 10 mots mémoire à l'adresse donnée
+```
+
+---
+
+## 🔹 Manipulation du PC (Program Counter)
+
+```gdb
+set $pc = 0x10000000   # redémarre le programme à une adresse spécifique
+```
+
+---
+
+## 🔹 Conseils pour boucles infinies
+
+- Placer les breakpoints **avant** de continuer (`continue`)  
+- Utiliser `watch $r7` pour observer le compteur dans la boucle  
+- `stepi` pour avancer instruction par instruction  
+
+---
+
+## 🔹 Flow typique pour debugger RP2040
+
+```gdb
+monitor reset halt       # reset CPU
+break loop               # breakpoint sur le label loop
+continue                 # exécute jusqu'au breakpoint
+x/i $pc                  # inspecte l'instruction courante
+info registers           # inspecte les registres
+stepi                    # exécute 1 instruction
+x/s $r0                  # inspecte la chaîne pointée par R0
+watch $r7                # observe le compteur
+```
+
+---
+
+
+# Guide rapide GDB TUI (Text User Interface)
+
+Ce guide permet d’utiliser l’interface semi-graphique intégrée dans GDB pour un debug plus visuel sans IDE graphique.
+
+---
+
+1. Lancer GDB avec ton programme
+
+gdb hello_asm.elf
+
+---
+
+2. Commandes principales `layout`
+
+Commande       | Description
+---------------|-----------------------------------------------------
+layout asm     | Affiche la fenêtre du désassemblage (instructions)
+layout regs    | Affiche la fenêtre des registres CPU
+layout src     | Affiche la fenêtre du code source
+layout split   | Affiche code source + désassemblage
+layout next    | Passe à la mise en page suivante (cycle entre modes)
+layout prev    | Revient à la mise en page précédente
+layout info    | Affiche l’état actuel du layout TUI
+
+---
+
+3. Commandes clavier utiles en mode TUI
+
+Raccourci              | Effet
+-----------------------|------------------------------------------------
+Ctrl + x puis a        | Active ou désactive l’interface TUI
+Ctrl + x puis 2        | Divise la fenêtre en deux (split)
+Ctrl + x puis o        | Change le focus entre les fenêtres
+
+---
+
+4. Commandes GDB utiles dans TUI
+
+Commande          | Description
+-----------------|---------------------------------------------------
+break loop        | Placer un breakpoint sur le label `loop`
+continue          | Continuer l’exécution jusqu’au breakpoint
+step              | Exécuter ligne source par ligne
+stepi             | Exécuter instruction par instruction
+next              | Exécuter ligne source suivante (sans entrer dans les appels)
+nexti             | Exécuter instruction suivante (sans entrer dans les appels)
+info registers    | Afficher les registres CPU
+x/i $pc           | Afficher l’instruction courante
+
+---
+
+5. Astuces
+
+- Après un `stepi` ou `nexti`, les fenêtres TUI se mettent à jour automatiquement.
+- Utilise `layout split` pour voir source et asm simultanément, très pratique sur du code embarqué.
+- Ctrl + c interrompt une exécution continue.
+
+---
+
+6. Exemple de session simple
+
+(gdb) layout split
+(gdb) break loop
+(gdb) continue
+(gdb) stepi
+(gdb) info registers
+
+---
+
 
 
 
